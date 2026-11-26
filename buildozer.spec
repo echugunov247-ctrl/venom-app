@@ -9,9 +9,9 @@ version = 0.1
 requirements = python3,kivy==2.3.0,requests,urllib3,certifi,chardet,idna,cython==0.29.36
 android.permissions = INTERNET, ACCESS_NETWORK_STATE
 android.api = 33
-android.minapi = 21
+android.minapi = 24
 android.ndk = 25b
-
+android.archs = arm64-v8a
 # ВАЖНО: эта строка заставляет Buildozer автоматически принять лицензии SDK
 android.accept_sdk_license = True
 
