@@ -67,7 +67,9 @@ class SettingsModal(ModalView):
         self.btn_ru = VenomButton(on_release=lambda x: self.change_lang('ru'))
         self.btn_en = VenomButton(on_release=lambda x: self.change_lang('en'))
         self.btn_close = VenomButton(on_release=lambda x: self.dismiss())
-        layout.add_widget(self.btn_ru); layout.add_widget(self.btn_en); layout.add_widget(self.btn_close)
+        layout.add_widget(self.btn_ru)
+        layout.add_widget(self.btn_en)
+        layout.add_widget(self.btn_close)
         self.add_widget(layout)
         self.update_texts()
 
@@ -210,7 +212,8 @@ class MailCatcherModal(ModalView):
             threading.Thread(target=self.check_messages, daemon=True).start()
 
     def check_messages(self):
-        if not self.sid_token: return
+        if not self.sid_token:
+            return
         try:
             url = f"https://api.guerrillamail.com/ajax.php?f=check_email&seq=0&sid_token={self.sid_token}"
             r = requests.get(url, headers=self.headers, timeout=10)
@@ -234,15 +237,18 @@ class MailCatcherModal(ModalView):
                         
                         self.log("[*] Письмо найдено! Ищу код...")
                         
-                        match = re.search(r'\b\d{4,6}\b', text + subject)
+                        # Ищем код от 4 до 6 цифр
+                        match = re.search(r'\b\d{4,6}\b', text + " " + subject)
                         if match:
                             code = match.group(0)
                             self.is_listening = False
                             self.log(f"\n[!!!] КОД НАЙДЕН: {code}")
                             Clipboard.copy(code)
                             self.log("[>] Код СКОПИРОВАН в буфер.")
-        except Exception:
-            pass
+        except Exception as e:
+            # Логируем ошибку только если это не таймаут
+            if "timeout" not in str(e).lower():
+                self.log(f"[!] Ошибка чтения: {str(e)[:30]}")
 
 class VenomApp(App):
     def build(self):
@@ -294,6 +300,7 @@ class VenomApp(App):
         MailCatcherModal(self).open()
 
     def start_app(self, instance):
+        # ИСПРАВЛЕНА СИНТАКСИЧЕСКАЯ ОШИБКА ЗДЕСЬ
         self.status.text = "Запуск..." if self.current_lang == 'ru' else "Starting..."
         self.btn_start.disabled = True
         Clock.schedule_once(self.reset_start, 2.0)
@@ -303,4 +310,4 @@ class VenomApp(App):
         self.status.text = TEXTS[self.current_lang]['status']
 
 if __name__ == '__main__':
-    VenomApp().run()main.pymain.py
+    VenomApp().run()
