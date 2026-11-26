@@ -13,20 +13,16 @@ jobs:
         sudo apt-get update
         sudo apt-get install --only-upgrade docker-ce docker-ce-cli containerd.io
 
-    - name: Pull Buildozer image
-      run: docker pull kivy/buildozer:stable
-
-    - name: Build with Buildozer
-      uses: ArtemSBulgakov/buildozer-action@v1
-      id: buildozer
-      with:
-        command: buildozer android debug
-        buildozer_version: stable
-        image: kivy/buildozer:stable
-        pull_image: false
+    - name: Build with Buildozer (Docker)
+      run: |
+        docker run --rm \
+          -v "${{ github.workspace }}:/home/user/hostcwd" \
+          -v "$HOME/.buildozer:/home/user/.buildozer" \
+          kivy/buildozer:stable \
+          buildozer android debug
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: venom-apk
-        path: ${{ steps.buildozer.outputs.filename }}
+        path: bin/*.apk
