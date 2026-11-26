@@ -10,7 +10,7 @@ version = 0.1
 android.archs = arm64-v8a
 
 # Указываем совместимые версии
-android.api = 33
+android.api = 30
 android.minapi = 24
 android.ndk = 25b
 
