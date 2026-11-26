@@ -23,6 +23,11 @@ jobs:
         pip install --upgrade pip
         pip install buildozer cython==0.29.36 virtualenv
 
+    - name: Clean Buildozer Cache
+      run: |
+        rm -rf ~/.buildozer
+        rm -rf .buildozer
+
     - name: Build with Buildozer
       run: |
         buildozer android debug
