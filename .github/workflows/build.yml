@@ -8,12 +8,22 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
+    - name: Update Docker
+      run: |
+        sudo apt-get update
+        sudo apt-get install --only-upgrade docker-ce docker-ce-cli containerd.io
+
+    - name: Pull Buildozer image
+      run: docker pull kivy/buildozer:stable
+
     - name: Build with Buildozer
       uses: ArtemSBulgakov/buildozer-action@v1
       id: buildozer
       with:
         command: buildozer android debug
         buildozer_version: stable
+        image: kivy/buildozer:stable
+        pull_image: false
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
