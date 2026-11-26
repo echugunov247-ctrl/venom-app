@@ -8,6 +8,12 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
+    # Жестко ставим Python 3.10, чтобы Kivy 2.3.0 собирался без ошибок
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
     - name: Free disk space
       run: |
         sudo rm -rf /usr/share/dotnet
