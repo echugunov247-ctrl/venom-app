@@ -23,6 +23,11 @@ jobs:
         pip install --upgrade pip
         pip install buildozer cython virtualenv
 
+    # Этот шаг принудительно принимает лицензии Android SDK
+    - name: Accept Android SDK Licenses
+      run: |
+        yes | sdkmanager --licenses
+
     - name: Build with Buildozer
       run: |
         buildozer android debug
