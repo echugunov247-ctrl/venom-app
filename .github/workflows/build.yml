@@ -18,6 +18,12 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
 
+    # ДОБАВЛЯЕМ SWAP (Виртуальную память)
+    - name: Increase Swap
+      uses: pierotofy/set-swap-space@master
+      with:
+        swap-size-gb: 6
+
     - name: Install Buildozer
       run: |
         pip install --upgrade pip
