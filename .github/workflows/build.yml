@@ -8,7 +8,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    # Убрали setup-python, чтобы Buildozer сам выбрал совместимую версию
     - name: Install system dependencies
       run: |
         sudo apt-get update
