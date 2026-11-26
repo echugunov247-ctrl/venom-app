@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import threading
 import time
-import random
-import requests
 import re
 import os
+import urllib.request
+import json
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
@@ -93,7 +93,6 @@ class MailCatcherModal(ModalView):
         self.current_email = None
         self.sid_token = None
         self.is_listening = False
-        # Браузерный юзерагент для обхода блокировок
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         }
@@ -163,14 +162,12 @@ class MailCatcherModal(ModalView):
         
         def task():
             try:
-                # Guerrilla Mail API (без капчи, через GET)
                 url = "https://api.guerrillamail.com/ajax.php?f=get_email_address&lang=en"
-                r = requests.get(url, headers=self.headers, timeout=15)
-                
-                self.log(f"[*] Ответ сервера: {r.status_code}")
-                
-                if r.status_code == 200:
-                    data = r.json()
+                req = urllib.request.Request(url, headers=self.headers)
+                with urllib.request.urlopen(req, timeout=15) as response:
+                    data = json.loads(response.read().decode())
+                    self.log(f"[*] Ответ сервера: {response.status}")
+                    
                     self.current_email = data.get('email_addr')
                     self.sid_token = data.get('sid_token')
                     
@@ -182,9 +179,7 @@ class MailCatcherModal(ModalView):
                         self.start_listening()
                         return
                 
-                self.log(f"[-] Ошибка сервера. Код: {r.status_code}")
-                if r.status_code == 403:
-                    self.log("[!] Сервер заблокировал IP. Используй VPN.")
+                self.log(f"[-] Ошибка сервера.")
                     
             except Exception as e:
                 self.log(f"[-] Ошибка: {str(e)[:50]}")
@@ -201,7 +196,6 @@ class MailCatcherModal(ModalView):
                 
             if self.is_listening:
                 self.log("\n[!] ПИСЬМО НЕ ПРИШЛО ЗА 2 МИНУТЫ.")
-                self.log("[!] Сайт регистрации заблокировал домен.")
                 self.is_listening = False
             
         threading.Thread(target=listen, daemon=True).start()
@@ -216,28 +210,22 @@ class MailCatcherModal(ModalView):
             return
         try:
             url = f"https://api.guerrillamail.com/ajax.php?f=check_email&seq=0&sid_token={self.sid_token}"
-            r = requests.get(url, headers=self.headers, timeout=10)
-            
-            if r.status_code == 200:
-                data = r.json()
+            req = urllib.request.Request(url, headers=self.headers)
+            with urllib.request.urlopen(req, timeout=10) as response:
+                data = json.loads(response.read().decode())
                 messages = data.get('list', [])
                 
                 if messages:
-                    # Берем ID первого письма
                     mail_id = messages[0].get('mail_id')
-                    
-                    # Читаем его
                     read_url = f"https://api.guerrillamail.com/ajax.php?f=fetch_email&email_id={mail_id}&sid_token={self.sid_token}"
-                    read_r = requests.get(read_url, headers=self.headers, timeout=10)
-                    
-                    if read_r.status_code == 200:
-                        mail_data = read_r.json()
+                    read_req = urllib.request.Request(read_url, headers=self.headers)
+                    with urllib.request.urlopen(read_req, timeout=10) as read_response:
+                        mail_data = json.loads(read_response.read().decode())
                         text = mail_data.get('mail_body', '')
                         subject = mail_data.get('mail_subject', '')
                         
                         self.log("[*] Письмо найдено! Ищу код...")
                         
-                        # Ищем код от 4 до 6 цифр
                         match = re.search(r'\b\d{4,6}\b', text + " " + subject)
                         if match:
                             code = match.group(0)
@@ -246,7 +234,6 @@ class MailCatcherModal(ModalView):
                             Clipboard.copy(code)
                             self.log("[>] Код СКОПИРОВАН в буфер.")
         except Exception as e:
-            # Логируем ошибку только если это не таймаут
             if "timeout" not in str(e).lower():
                 self.log(f"[!] Ошибка чтения: {str(e)[:30]}")
 
@@ -300,7 +287,6 @@ class VenomApp(App):
         MailCatcherModal(self).open()
 
     def start_app(self, instance):
-        # ИСПРАВЛЕНА СИНТАКСИЧЕСКАЯ ОШИБКА ЗДЕСЬ
         self.status.text = "Запуск..." if self.current_lang == 'ru' else "Starting..."
         self.btn_start.disabled = True
         Clock.schedule_once(self.reset_start, 2.0)
