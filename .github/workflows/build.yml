@@ -6,12 +6,16 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
+    
     - name: Build with Buildozer
       uses: ArtemSBulgakov/buildozer-action@v1
       id: buildozer
       with:
+        image: kivy/buildozer:stable
+        pull_image: false
         command: buildozer android debug
         buildozer_version: stable
+        
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
