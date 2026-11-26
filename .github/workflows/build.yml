@@ -6,16 +6,27 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
-    
+
+    # 1. Обновляем Docker до актуальной версии (часто решает проблему с образами)
+    - name: Update Docker
+      run: |
+        sudo apt-get update
+        sudo apt-get install --only-upgrade docker-ce docker-ce-cli containerd.io
+
+    # 2. Принудительно скачиваем нужный образ заранее
+    - name: Pull Buildozer image
+      run: docker pull kivy/buildozer:stable
+
+    # 3. Запускаем сборку с уже скачанным образом
     - name: Build with Buildozer
       uses: ArtemSBulgakov/buildozer-action@v1
       id: buildozer
       with:
         image: kivy/buildozer:stable
-        pull_image: false
+        pull_image: false  # Запрещаем экшену скачивать образ заново
         command: buildozer android debug
         buildozer_version: stable
-        
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
